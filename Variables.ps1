@@ -1,0 +1,5 @@
+[string]$ecapDir = ""
+[string]$desktopDir = ""
+[string]$ngrokDir = ""
+[string]$ghostInspectorApiKey = ""
+[string]$ngrokAuthToken = ""
