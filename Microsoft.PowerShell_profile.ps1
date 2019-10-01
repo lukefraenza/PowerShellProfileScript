@@ -191,6 +191,22 @@ function Start-GiTests {
 }
 
 
+<#
+  .Synopsis
+    Get the last scheduled run results for all GI suites
+  .EXAMPLE
+    Get-GIResults
+#>
+function Get-GIResults {
+  [CmdletBinding()]
+  Param()
+  Write-Verbose "Getting the last suite run results"
+  Set-Location $ecapDir
+  [string] $cmd = "node .\scripts\get-ghostInspectorResults.js -g $ghostInspectorApiKey -a"
+  Invoke-Expression "$cmd"
+}
+
+
 function Remove-RemoteDeletedBranches {
   #Original bash command: git fetch -p -and for branch in `git branch -vv | grep ': gone]' | gawk '{print $1}'`; do git branch -D $branch; done
 
