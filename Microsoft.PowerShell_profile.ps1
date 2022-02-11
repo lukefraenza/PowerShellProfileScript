@@ -20,6 +20,9 @@ function Get-CustomFunctions() {
   Write-Host 'Start-GiTests'
   Write-Host 'Remove-RemoteDeletedBranches'
   Write-Host 'Get-ScriptVariables'
+  Write-Host 'Reset-NodeModules'
+  Write-Host 'Start-EcapIDFrontend'
+  Write-Host 'Start-EcapIDBackend'
   Write-Host '- - - - -'
   Write-Host 'Run `Get-Help <cmd> -full` for details on the above functions'
 }
@@ -30,10 +33,28 @@ function Get-CustomFunctions() {
 #>
 function Get-ScriptVariables() {
   Write-Host '$ecapDir'
+  Write-Host '$ecapIdDir'
   Write-Host '$desktopDir'
   Write-Host '$ngrokDir'
   Write-Host '$ghostInspectorApiKey'
   Write-Host '$ngrokAuthToken'
+}
+
+function Reset-Nodemodules {
+  [CmdletBinding()]
+  Param(
+    # Force npm install
+    [Parameter(Mandatory = $false)]
+    [switch]
+    $FORCE
+  )
+  Remove-Item -Recurse -Force .\node_modules\@energycap
+  [string] $cmd = "npm install"
+  if ($FORCE -eq $true) {
+    $cmd += " --force"
+  }
+  Write-Debug "Running $cmd"
+  Invoke-Expression "$cmd"
 }
 
 <#
@@ -60,6 +81,53 @@ function Start-Frontend {
   if ($AOT -eq $true) {
     $cmd += ":aot"
   }
+
+  Write-Debug "Running $cmd"
+  Invoke-Expression "$cmd"
+}
+
+<#
+  .Synopsis
+    Start the ECAPID frontend.  Pass the -LOCAL switch to do an AOT build.
+  .EXAMPLE
+    Start-EcapIDFrontend
+  .EXAMPLE
+    Start-EcapIDFrontend -LOCAL
+#>
+function Start-EcapIDFrontend {
+  [CmdletBinding()]
+  Param(
+    # Run against local backend
+    [Parameter(Mandatory = $false)]
+    [switch]
+    $LOCAL
+  )
+
+  Write-Verbose "Changing directory to $ecapIdDir"
+  Set-Location $ecapIdDir
+
+  [string] $cmd = "ng serve"
+  if ($LOCAL -eq $true) {
+    $cmd += " --c local"
+  }
+  $cmd += " --public-host lwf-ecapid.ngrok.io"
+
+  Write-Debug "Running $cmd"
+  Invoke-Expression "$cmd"
+}
+
+<#
+  .Synopsis
+    Start the ECAPID backend.
+  .EXAMPLE
+    Start-EcapIDBackend
+#>
+function Start-EcapIDBackend {
+
+  Write-Verbose "Changing directory to $ecapIdDir"
+  Set-Location $ecapIdDir
+
+  [string] $cmd = "npm run watch:backend"
 
   Write-Debug "Running $cmd"
   Invoke-Expression "$cmd"
@@ -232,3 +300,4 @@ function Remove-RemoteDeletedBranches {
   Write-Host "Remaining branches:"
   git branch
 }
+Import-Module 'C:\dev\posh-git\src\posh-git.psd1'
